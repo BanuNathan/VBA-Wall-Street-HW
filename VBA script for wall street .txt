@@ -1,0 +1,208 @@
+Sub stockmarkeranalysis()
+
+  ' Set an initial variable for holding the Ticker name
+  Dim Ticker As String
+  
+  Dim Tickermin As String
+  Dim Tickermax As String
+  
+ 
+  ' Set an initial variable for holding the total per Ticker
+  Dim TotalStock As LongLong
+  
+  
+  'set variable to hold open price
+  Dim nextOpenPrice As Double
+  
+  
+  'set variable to hold closing price
+  Dim CLosingPrice As Double
+  
+  
+  'set variable to hold percent change
+  Dim PercentChange As Double
+
+  
+  'set variable to hold grand total of stock
+  Dim GreatestTotalstock As LongLong
+ 
+  
+  'set variable to hold the greatest increase
+  Dim GreatestIncrease As Double
+  
+  
+  ' set variable to hold lowest increase
+  Dim LowestIncrease As Double
+  
+  
+  ' get the last row count
+  'Dim LAstROW As Integer
+  
+  
+  ' Keep track of the location for each Ticker in the summary table
+  Dim Summary_Table_Row As Long
+   
+  Dim Summary_table_lastrow As Long
+  
+  
+  For Each ws In Worksheets
+    ' row number for summary table assigned
+    Summary_Table_Row = 3
+  
+  ' print header
+    ws.Range("I" & 2).Value = "<Ticker>"
+    ws.Range("J" & 2).Value = "<Opening Price>"
+    ws.Range("K" & 2).Value = "<Closing Price>"
+    ws.Range("L" & 2).Value = "<Yearly Change>"
+    ws.Range("M" & 2).Value = "<Percent Change>"
+    ws.Range("N" & 2).Value = "<Total Volume>"
+    ws.Range("M:M").NumberFormat = "0.00%"
+    ws.Range("P" & 5).Value = "Greatest % Increase"
+    ws.Range("P" & 6).Value = "Greatest % decreae"
+    ws.Range("P" & 7).Value = "Greatest Total Volume"
+    ws.Range("Q" & 4).Value = "Ticker"
+    ws.Range("R" & 4).Value = "Value"
+    
+    
+    TotalStock = 0
+    nextOpenPrice = 0
+    CLosingPrice = 0
+    PercentChange = 0
+    
+    GreatestTotalstock = 0
+    GreatestIncrease = 0
+    LowestIncrease = 0
+    Summary_table_lastrow = 0
+    
+    LAstROW = ws.Cells(Rows.Count, "A").End(xlUp).Row
+ 
+   'Capture the opening price for the first Ticker here
+    nextOpenPrice = ws.Cells(2, 3).Value
+
+       
+   'Loop through all Ticker in the sheet
+    For I = 2 To LAstROW
+
+
+
+    'Check if we are still within the same Ticker, if it is not...
+    If ws.Cells(I + 1, 1).Value <> ws.Cells(I, 1).Value Then
+    
+      ' Add to the  Total Stock
+      TotalStock = (TotalStock + ws.Cells(I, 7).Value)
+      
+      ' Print total volume in the summary_table
+      ws.Range("N" & Summary_Table_Row).Value = TotalStock
+      
+
+     ' Print the Ticker in the Summary Table
+     ' Range("I" & Summary_Table_Row).Value = Cells(i, 1)
+
+
+     ' Store Closing price of current Ticker before moving to next record
+      CLosingPrice = ws.Cells(I, 6)
+     
+     ' Print Closing price in the summarytable
+      ws.Range("J" & Summary_Table_Row).Value = nextOpenPrice
+     
+     
+     
+     
+     ' Calculate yearly change
+      yearlychange = CLosingPrice - nextOpenPrice
+     
+     ' Print the Ticker in the Summary_Table
+      ws.Range("I" & Summary_Table_Row).Value = ws.Cells(I, 1)
+      
+     
+     ' Print Closing Price in the summary_table
+      ws.Range("K" & Summary_Table_Row).Value = CLosingPrice
+     
+     ' Print yearly change in the summary_table
+      ws.Range("L" & Summary_Table_Row).Value = yearlychange
+      
+      'change color of the cell to red for negative change
+      If yearlychange < 0 Then
+        ws.Range("L" & Summary_Table_Row).Interior.Color = vbRed
+      'change color of cell to green for positive change
+      Else
+        ws.Range("L" & Summary_Table_Row).Interior.Color = vbGreen
+      End If
+      
+      'Print the Percent Change in the summary table
+      If (CLosingPrice <> 0 And nextOpenPrice <> 0) Then
+        ws.Range("M" & Summary_Table_Row).Value = (CLosingPrice - nextOpenPrice) / nextOpenPrice
+      Else
+      ws.Range("M" & Summary_Table_Row).Value = 0
+      End If
+
+     
+      
+      ' Add one to the summary table row
+      Summary_Table_Row = Summary_Table_Row + 1
+      
+      
+    
+      ' Store the open price of the next Ticker here
+      nextOpenPrice = ws.Cells(I + 1, 3).Value
+      
+      ' Reset the  Total stock
+      
+      TotalStock = 0
+      
+
+    ' If the cell immediately following a row is the same Ticker...
+    
+    Else
+
+      ' Add to the TotalStock
+      TotalStock = (TotalStock + ws.Cells(I, 7).Value)
+      
+    End If
+
+  Next I
+ 
+    
+    Summary_table_lastrow = ws.Cells(Rows.Count, "N").End(xlUp).Row
+    
+     GreatestTotalstock = ws.Cells(3, 14).Value
+     GreatestIncrease = ws.Cells(3, 13).Value
+     LowestIncrease = ws.Cells(3, 13).Value
+   ' MsgBox (Summary_table_lastrow)
+    
+    For j = 3 To Summary_table_lastrow
+        If ws.Cells(j, 13).Value > GreatestIncrease Then
+          GreatestIncrease = ws.Cells(j, 13).Value
+          greatest_Ticker = ws.Cells(j, 9).Value
+        End If
+        
+        If ws.Cells(j, 13).Value < LowestIncrease Then
+          LowestIncrease = ws.Cells(j, 13).Value
+          Lowest_Ticker = ws.Cells(j, 9).Value
+        End If
+        
+        If ws.Cells(j, 14).Value > GreatestTotalstock Then
+          GreatestTotalstock = ws.Cells(j, 14).Value
+          greatest_totalstock_Ticker = ws.Cells(j, 9).Value
+        End If
+        
+    
+    Next j
+       
+        ws.Cells(5, 17).Value = greatest_Ticker
+        ws.Cells(5, 18).Value = GreatestIncrease
+        ws.Cells(5, 18).NumberFormat = "0.00%"
+        ws.Cells(6, 17).Value = Lowest_Ticker
+        ws.Cells(6, 18).Value = LowestIncrease
+        ws.Cells(6, 18).NumberFormat = "0.00%"
+        ws.Cells(7, 17).Value = greatest_totalstock_Ticker
+        ws.Cells(7, 18).Value = GreatestTotalstock
+    
+  
+Next ws
+    
+ '   ws.Columns("A:R").AutoFit
+End Sub
+
+
+
